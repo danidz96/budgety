@@ -80,11 +80,12 @@ var UIController = (function () {
             if (type === 'inc') {
                 element = DOMstrings.incomeContainer;
 
-                html ='<div class="item" id="income-%id%"><div class="item_description">%description%</div><div class="item_value">%value%</div><div class="item_delete"><button class="item_delete-btn"><i class="ion-ios-close-outline"></i></button></div></div>';
+                html ='<div class="item" id="income-%id%"><div class="item_description">%description%</div><div class="item_value">+ %value%</div><div class="item_delete"><button class="item_delete-btn"><i class="ion-ios-close-outline"></i></button></div></div>';
+
             } else if (type === 'exp') {
                 element = DOMstrings.expensesContainer;
 
-                html = '<div class="item" id="expense-%id%"><div class="item_description">%description%</div><div class="item_value">%value%</div><div class="item_percentage">21%</div><div class="item_delete"><button class="item_delete-btn"><i class="ion-ios-close-outline"></i></button></div></div>';
+                html = '<div class="item" id="expense-%id%"><div class="item_description">%description%</div><div class="item_value">- %value%</div><div class="item_percentage">21%</div><div class="item_delete"><button class="item_delete-btn"><i class="ion-ios-close-outline"></i></button></div></div>';
             }
 
             // Replace the placeholder text with some actual data
@@ -95,6 +96,18 @@ var UIController = (function () {
             // Insert the HTML into the DOM
             document.querySelector(element).insertAdjacentHTML('beforeend', newHtml);
 
+        },
+
+        clearFields: function () {
+            var fields;
+
+            fields = document.querySelectorAll(DOMstrings.inputDescription + ', ' + DOMstrings.inputValue);
+
+            fields.forEach( field => {
+                field.value = '';
+            });
+
+            fields[0].focus();
         },
 
         getDOMstrings: function () {
@@ -130,6 +143,9 @@ var controller = (function (budgetCtrl, UICtrl) {
 
         // Add the item to the UI
         UICtrl.addListItem(newItem, input.type);
+
+        // Clear the fields
+        UICtrl.clearFields();
 
         // Calculate the budget
 
