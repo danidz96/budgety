@@ -13,6 +13,14 @@ var budgetController = (function () {
         this.value = value;
     };
 
+    var calculateTotal = function (type) {
+        var sum = 0;
+        data.allItems[type].forEach(element => {
+            sum = sum + element.value;
+        });
+        data.totals[type] = sum;
+    };
+
     var data = {
         allItems: {
             exp: [],
@@ -21,7 +29,9 @@ var budgetController = (function () {
         totals: {
             exp: 0,
             inc: 0
-        }
+        },
+        budget: 0,
+        percentage: -1
     };
 
     return {
@@ -47,6 +57,32 @@ var budgetController = (function () {
 
             //Return the new element
             return newItem;
+        },
+
+        calculateBudget: function () {
+
+            // Calculate total income and expenses
+            calculateTotal('exp');
+            calculateTotal('inc');
+            // Calculate the budget:
+            data.budget = data.totals.inc - data.totals.exp;
+
+            // Calculate the % of income that we expend
+            if (data.totals.inc > 0) {
+                data.percentage = Math.round((data.totals.exp / data.totals.inc) * 100);
+            } else {
+                data.percentage = -1;
+            }
+            
+        },
+
+        getBudget: function () {
+            return {
+                budget: data.budget,
+                totalInc: data.totals.inc,
+                totalExp: data.totals.exp,
+                percentage: data.percentage
+            };
         }
     };
 
@@ -69,7 +105,7 @@ var UIController = (function () {
             return {
                 type: document.querySelector(DOMstrings.inputType).value,
                 description: document.querySelector(DOMstrings.inputDescription).value,
-                value: document.querySelector(DOMstrings.inputValue).value
+                value: parseFloat(document.querySelector(DOMstrings.inputValue).value)
             };
         },
 
@@ -119,9 +155,9 @@ var UIController = (function () {
 
 // GLOBAL APP CONTROLLER
 var controller = (function (budgetCtrl, UICtrl) {
-
+    var DOM = UICtrl.getDOMstrings();
     var setupEventListeners = function () {
-        var DOM = UICtrl.getDOMstrings();
+        
         document.querySelector(DOM.inputButton).addEventListener('click', ctrlAddItem);
     
         document.addEventListener('keypress', event => {
@@ -132,24 +168,46 @@ var controller = (function (budgetCtrl, UICtrl) {
         });
     };
 
+    var updateBudget = function () {
+        
+        // Calculate the budget
+        budgetCtrl.calculateBudget();
+
+        // Return th budget
+        var budget = budgetCtrl.getBudget();
+
+        // Display the budget on the UI
+        console.log(budget);
+
+    };
+
     var ctrlAddItem = function () {
         var input, newItem;
                 
         // Get the field input data
         input = UICtrl.getInput();
 
-        // Add the item to the budget controller
-        newItem = budgetCtrl.addItem(input.type, input.description, input.value);
+        if (input.description != '' && !isNaN(input.value) && input.value > 0) {
+            // Add the item to the budget controller
+            newItem = budgetCtrl.addItem(input.type, input.description, input.value);
 
-        // Add the item to the UI
-        UICtrl.addListItem(newItem, input.type);
+            // Add the item to the UI
+            UICtrl.addListItem(newItem, input.type);
 
-        // Clear the fields
-        UICtrl.clearFields();
+            // Clear the fields
+            UICtrl.clearFields();
+            document.querySelector(DOM.inputDescription).classList.remove('input_error');
+            document.querySelector(DOM.inputValue).classList.remove('input_error');
 
-        // Calculate the budget
+            // Calculate and update budget
+            updateBudget();
 
-        // Display the budget on the UI
+        } else {
+            document.querySelector(DOM.inputDescription).classList.add('input_error');
+            document.querySelector(DOM.inputValue).classList.add('input_error');
+        }
+
+        
 
     };
 
