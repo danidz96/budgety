@@ -146,25 +146,12 @@ var UIController = (function () {
         expensesLabel: '.budget_expenses-value',
         percentageLabel: '.budget_expenses-percentage',
         container: '.container',
-        expensesPercLabel: '.item_percentage'
+        expensesPercLabel: '.item_percentage',
+        dateLabel : '.budget_title-month'
     };
 
     var formatNumber = function(num, type){
-         var int, dec;
 
-       /*  num = Math.abs(num);
-        num = num.toFixed(2); */
-        /*
-
-        numSplit = num.split('.');
-        int = numSplit[0];
-        dec = numSplit[1];
-
-        if (int.length > 3) {
-            int = int.substr(0, int.length - 3) + ',' + int.substr(int.length - 3, 3);
-        }
-
-        return (type === 'exp' ? sign = '-' : sign = '+') + ' ' + int + '.' + dec; */
         return (type === 'exp' ? sign = '-' : sign = '+') + ' ' + num.toLocaleString(undefined, {minimumFractionDigits:2}, {maximumFractionDigits:2});
     };
     
@@ -253,6 +240,18 @@ var UIController = (function () {
                     current.textContent = '---';
                 }
             });
+        },
+
+        displayDate: function () {
+            var now, year, month;
+
+            now = new Date();
+
+            year = now.getFullYear();
+            month = now.toLocaleString('en-US', { month: "long" });
+
+            document.querySelector(DOMstrings.dateLabel).textContent = month + ', ' + year;
+
         },
 
         getDOMstrings: function () {
@@ -362,6 +361,7 @@ var controller = (function (budgetCtrl, UICtrl) {
 
     return {
         init: function () {
+            UICtrl.displayDate();
             UICtrl.displayBudget({
                 budget: 0,
                 totalInc: 0,
